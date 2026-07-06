@@ -34,7 +34,9 @@ jobs:
       - name: Upload to the demo Space (token-less OIDC)
         env:
           # Scope the short-lived OIDC token to the demo Space only.
-          HF_OIDC_RESOURCE: careermind2026/titan-omega-demo
+          # NB: a Space resource MUST be prefixed "spaces/" — a bare id is
+          # treated as a model repo and the exchange fails with "not found".
+          HF_OIDC_RESOURCE: spaces/careermind2026/titan-omega-demo
         run: |
           # Don't ship git internals, workflows, or heavy demo media to the Space.
           rm -rf .git .github docs/media
