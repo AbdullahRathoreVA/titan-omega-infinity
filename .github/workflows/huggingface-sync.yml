@@ -1,9 +1,13 @@
-name: Sync to Hugging Face Hub
+name: Sync to Hugging Face Hub (DEMO SPACE)
 
+# IMPORTANT: this repo (titan-omega-infinity) deploys to the PUBLIC GUEST DEMO
+# space — NOT the founder's production space. The production space is fed only
+# by the original AbdullahRathoreVA/Project-titan-omega repo. Keeping these
+# separate is what stops the commercial fork from ever clobbering the live app.
 on:
   push:
-    branches: [main] # Set this to your default branch
-  workflow_dispatch: # Allows you to run it manually
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   sync-to-hub:
@@ -13,12 +17,12 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
-          
-      - name: Push to Hugging Face
+
+      - name: Push to Hugging Face demo space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         # HF rejects plain-git binaries (Xet policy), so deploy a single clean
-        # commit with showcase media stripped — the Space never needs docs/media.
+        # commit with any media stripped.
         run: |
           rm -rf docs/media
           git config user.name "github-actions"
@@ -26,4 +30,4 @@ jobs:
           git checkout --orphan hf-deploy
           git add -A
           git commit -m "Deploy $GITHUB_SHA"
-          git push --force https://careermind2026:$HF_TOKEN@huggingface.co/spaces/careermind2026/project-titan-omega hf-deploy:main
+          git push --force https://careermind2026:$HF_TOKEN@huggingface.co/spaces/careermind2026/titan-omega-demo hf-deploy:main
