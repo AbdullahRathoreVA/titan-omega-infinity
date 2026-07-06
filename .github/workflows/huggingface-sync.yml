@@ -1,33 +1,43 @@
 name: Sync to Hugging Face Hub (DEMO SPACE)
 
-# IMPORTANT: this repo (titan-omega-infinity) deploys to the PUBLIC GUEST DEMO
-# space — NOT the founder's production space. The production space is fed only
-# by the original AbdullahRathoreVA/Project-titan-omega repo. Keeping these
-# separate is what stops the commercial fork from ever clobbering the live app.
+# Deploys this fork to the PUBLIC GUEST DEMO space using GitHub OIDC via a
+# Hugging Face "Trusted Publisher" configured on the Space — NO HF token is
+# stored anywhere. It never targets the founder's production space (that one is
+# fed only by the original Project-titan-omega repo).
+#
+# Requires (already set on the Space):
+#   - Trusted Publisher: repo=AbdullahRathoreVA/titan-omega-infinity,
+#     branch=main, workflow=huggingface-sync.yml
+#   - Variables: TITAN_GUEST_MODE=1, TITAN_REQUIRE_AUTH=0 (no API keys)
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  id-token: write   # lets huggingface_hub exchange the GitHub OIDC token
+  contents: read
+
 jobs:
-  sync-to-hub:
+  deploy-demo:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          lfs: true
+      - uses: actions/checkout@v4
 
-      - name: Push to Hugging Face demo space
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install hf CLI
+        run: pip install -U "huggingface_hub[cli]"
+
+      - name: Upload to the demo Space (token-less OIDC)
         env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        # HF rejects plain-git binaries (Xet policy), so deploy a single clean
-        # commit with any media stripped.
+          # Scope the short-lived OIDC token to the demo Space only.
+          HF_OIDC_RESOURCE: careermind2026/titan-omega-demo
         run: |
-          rm -rf docs/media
-          git config user.name "github-actions"
-          git config user.email "github-actions@users.noreply.github.com"
-          git checkout --orphan hf-deploy
-          git add -A
-          git commit -m "Deploy $GITHUB_SHA"
-          git push --force https://careermind2026:$HF_TOKEN@huggingface.co/spaces/careermind2026/titan-omega-demo hf-deploy:main
+          # Don't ship git internals, workflows, or heavy demo media to the Space.
+          rm -rf .git .github docs/media
+          hf upload careermind2026/titan-omega-demo . . \
+            --repo-type=space \
+            --commit-message "Deploy ${GITHUB_SHA}"
