@@ -32,6 +32,7 @@ def fresh_store(monkeypatch):
     STORE.feed.clear()
     STORE.metrics.clear()
     STORE.posts.clear()
+    STORE.demo_visits.clear()
     seed(STORE)
     opportunity.discover(STORE)
     evolution.ensure_weights(STORE)
@@ -354,3 +355,26 @@ def test_execute_opportunity_and_evolution(client):
     # Evolution weights should have changed.
     w_after = client.get("/api/evolution").json()["weights"]
     assert w_after != w_before
+
+# ── guest-demo visit tracking ──────────────────────────────────────────────
+
+def test_demo_visit_records_and_stats(monkeypatch):
+    monkeypatch.setattr("app.persistence.save", lambda *a, **k: None)
+    client = TestClient(app)
+    r = client.get("/api/demo/visit?session=abc123&ref=linkedin",
+                   headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0) Chrome/120"})
+    assert r.status_code == 200 and r.json()["ok"] is True
+    stats = client.get("/api/demo/stats").json()
+    assert stats["total_opens"] == 1
+    assert stats["unique_sessions"] == 1
+    assert stats["by_browser"].get("Chrome") == 1
+    assert stats["by_os"].get("Windows") == 1
+
+
+def test_demo_visit_blocked_as_mutation_in_guest_mode(monkeypatch):
+    # GET beacon must work; a POST to any action must be refused in guest mode.
+    monkeypatch.setenv("TITAN_GUEST_MODE", "1")
+    client = TestClient(app)
+    assert client.get("/api/demo/visit").status_code == 200
+    blocked = client.post("/api/revenue/log", json={"amount": 5, "source": "x"})
+    assert blocked.status_code == 403

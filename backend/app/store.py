@@ -57,6 +57,9 @@ class Store:
     pending_decision: Optional[dict] = None
     # Council decision history — auditable record of every debate outcome.
     decisions: List[dict] = field(default_factory=list)
+    # Public guest-demo visits: {ts, browser, os, ref, session} — so Abdullah can
+    # see when/how often his demo is opened. No IPs, no PII.
+    demo_visits: List[dict] = field(default_factory=list)
 
     _lock: threading.RLock = field(default_factory=threading.RLock)
     _ids: "itertools.count" = field(default_factory=lambda: itertools.count(1))

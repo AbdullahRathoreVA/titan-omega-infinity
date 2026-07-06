@@ -38,6 +38,7 @@ def save(store: Store = STORE) -> None:
             "expenses": store.expenses,
             "leads": store.leads,
             "decisions": store.decisions,
+            "demo_visits": store.demo_visits[-2000:],  # cap: keep the last 2000
         }
         tmp = STATE_FILE + ".tmp"
         with open(tmp, "w", encoding="utf-8") as f:
@@ -71,5 +72,8 @@ def load(store: Store = STORE) -> None:
         decisions = data.get("decisions")
         if isinstance(decisions, list):
             store.decisions = decisions
+        visits = data.get("demo_visits")
+        if isinstance(visits, list):
+            store.demo_visits = visits
     except Exception:
         pass

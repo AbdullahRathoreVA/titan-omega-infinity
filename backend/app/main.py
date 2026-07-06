@@ -24,6 +24,7 @@ from fastapi.staticfiles import StaticFiles
 from . import persistence
 from .api.actions import router as actions_router
 from .api.comms import router as comms_router
+from .api.demo import router as demo_router
 from .api.finance import router as finance_router
 from .api.growth import router as growth_router
 from .api.router import router
@@ -173,6 +174,7 @@ app.include_router(actions_router)
 app.include_router(growth_router)
 app.include_router(comms_router)
 app.include_router(finance_router)
+app.include_router(demo_router)
 
 
 @app.get("/health", tags=["system"])

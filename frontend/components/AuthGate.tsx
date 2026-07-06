@@ -10,6 +10,24 @@ import { CommandCenter } from "./CommandCenter";
 // dashboard. When auth IS required, we VERIFY the stored token actually works
 // before trusting it — otherwise a stale token (e.g. after changing the
 // username/password) would silently trap the dashboard in 401/demo mode.
+// Fire a one-per-session visit beacon so the demo's /api/demo/stats reflects
+// real opens. GET (guest mode blocks non-GET); best-effort, never blocks the UI.
+function pingVisit() {
+  try {
+    if (sessionStorage.getItem("titan_visit_pinged")) return;
+    sessionStorage.setItem("titan_visit_pinged", "1");
+    let sid = localStorage.getItem("titan_sid");
+    if (!sid) {
+      sid = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem("titan_sid", sid);
+    }
+    const ref = encodeURIComponent(document.referrer || "direct");
+    fetch(`/api/demo/visit?session=${sid}&ref=${ref}`, { cache: "no-store" }).catch(() => {});
+  } catch {
+    /* private mode / storage disabled — skip silently */
+  }
+}
+
 export function AuthGate() {
   const [state, setState] = useState<"loading" | "login" | "ready">("loading");
   const [demo, setDemo] = useState(true);
@@ -26,6 +44,7 @@ export function AuthGate() {
       (window as unknown as { __TITAN_GUEST?: boolean }).__TITAN_GUEST = true;
       setGuest(true);
       setState("ready");
+      pingVisit(); // let Abdullah see that someone opened the demo
       return;
     }
 
