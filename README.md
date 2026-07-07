@@ -14,7 +14,7 @@ short_description: Autonomous Founder Empire OS with 102 AI agents
 
 # TITAN Ω — the Autonomous AI Business Operating System
 
-**Not a dashboard. A living AI command universe that runs a founder's business 24/7 — built solo, with $0.**
+**Not a dashboard. A living AI command universe that runs a founder's business 24/7 — built solo.
 
 [🚀 Live demo](https://careermind2026-project-titan-omega.hf.space) · Built by [Abdullah Rathore](https://github.com/AbdullahRathoreVA)
 
@@ -57,7 +57,7 @@ fire when real events happen. Revenue starts at $0 and only ever shows the truth
 - **One container** — Next.js static export served by FastAPI; GitHub Actions → Hugging Face Spaces auto-deploy
 - **Graceful everywhere** — every 3D scene has an error boundary + mobile fallback; every engine degrades honestly when a key is missing
 - **32 backend tests**, verified deploys, zero paid services
-
+- **It can also run you website and web apps or businesses or companies and fully operate them
 ## Stack
 
 `Python` `FastAPI` `Next.js 14` `TypeScript` `Tailwind` `three.js / react-three-fiber` `@react-three/postprocessing`
