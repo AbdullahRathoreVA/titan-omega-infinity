@@ -378,3 +378,24 @@ def test_demo_visit_blocked_as_mutation_in_guest_mode(monkeypatch):
     assert client.get("/api/demo/visit").status_code == 200
     blocked = client.post("/api/revenue/log", json={"amount": 5, "source": "x"})
     assert blocked.status_code == 403
+
+# ── living agents (workflow progression) ────────────────────────────────────
+
+def test_heartbeat_advances_agent_workflows():
+    from app.core import executive
+    from app.engines import workflows
+    from app.domain.enums import AgentStatus
+
+    for a in STORE.agents.values():
+        a.status = AgentStatus.WORKING
+        a.step = 0
+        a.current_task = None
+        a.progress = 0.0
+    executive.heartbeat(STORE)
+
+    advanced = [a for a in STORE.agents.values() if a.current_task]
+    assert advanced, "heartbeat advanced no agents"
+    for a in advanced:
+        assert 0.0 < (a.progress or 0.0) <= 1.0
+        valid_stages = {text for text, _ in workflows.stages_for(a.spec.division.value)}
+        assert a.current_task in valid_stages
