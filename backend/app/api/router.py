@@ -202,6 +202,12 @@ def list_executions() -> List[ExecutionAction]:
     return [ExecutionAction(**a) for a in actions]
 
 
+@router.get("/decisions", tags=["executive"])
+def list_decisions(limit: int = 20) -> List[dict]:
+    """Council decision history (memory timeline), newest first."""
+    return list(reversed(STORE.decisions[-max(1, min(limit, 50)):]))
+
+
 @router.post("/executions/from-opportunity/{opportunity_id}",
              response_model=ExecutionAction, tags=["execution"])
 def execute_opportunity(opportunity_id: str) -> ExecutionAction:
